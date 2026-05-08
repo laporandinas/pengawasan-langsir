@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Generator Laporan Pengawasan Langsir</title>
+
+<style>
+
+body{
+    font-family:Arial,sans-serif;
+    background:#f2f2f2;
+    margin:0;
+    padding:15px;
+}
+
+.container{
+    max-width:900px;
+    margin:auto;
+    background:white;
+    padding:20px;
+    border-radius:22px;
+}
+
+h1{
+    text-align:center;
+    margin-bottom:30px;
+    font-size:28px;
+}
+
+label{
+    display:block;
+    margin-top:18px;
+    margin-bottom:8px;
+    font-weight:bold;
+    font-size:18px;
+}
+
+input,select{
+    width:100%;
+    padding:16px;
+    border-radius:14px;
+    border:1px solid #ccc;
+    box-sizing:border-box;
+    font-size:16px;
+}
+
+button{
+    width:100%;
+    padding:18px;
+    border:none;
+    border-radius:16px;
+    background:#25D366;
+    color:white;
+    font-size:18px;
+    margin-top:25px;
+}
+
+.fake-time-input{
+    width:100%;
+    background:white;
+    border:1px solid #ccc;
+    border-radius:14px;
+    padding:20px;
+    font-size:34px;
+    text-align:center;
+    box-sizing:border-box;
+}
+
+.picker-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.45);
+    display:none;
+    justify-content:center;
+    align-items:flex-end;
+    z-index:9999;
+}
+
+.picker-box{
+    width:100%;
+    background:white;
+    border-radius:32px 32px 0 0;
+    padding:25px;
+    box-sizing:border-box;
+}
+
+.picker-title{
+    text-align:center;
+    font-size:30px;
+    font-weight:bold;
+    margin-bottom:25px;
+}
+
+.wheel-container{
+    position:relative;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:25px;
+}
+
+.wheel-container::after{
+    content:'';
+
+    position:absolute;
+
+    width:100%;
+    height:55px;
+
+    border-top:2px solid #ddd;
+    border-bottom:2px solid #ddd;
+
+    top:50%;
+    transform:translateY(-50%);
+
+    pointer-events:none;
+}
+
+.wheel{
+    width:120px;
+    height:220px;
+
+    overflow-y:auto;
+
+    scroll-snap-type:y mandatory;
+
+    padding-top:82px;
+    padding-bottom:82px;
+
+    box-sizing:border-box;
+
+    text-align:center;
+
+    scrollbar-width:none;
+}
+
+.wheel::-webkit-scrollbar{
+    display:none;
+}
+
+.wheel div{
+    height:55px;
+    line-height:55px;
+
+    scroll-snap-align:center;
+
+    font-size:42px;
+    font-weight:bold;
+
+    opacity:0.22;
+
+    transition:0.15s;
+}
+
+.wheel div.active{
+    opacity:1;
+    font-size:58px;
+}
+
+.wheel-separator{
+    font-size:48px;
+    font-weight:bold;
+}
+
+.picker-btn{
+    width:100%;
+    margin-top:25px;
+    padding:18px;
+    border:none;
+    border-radius:20px;
+    background:#2563eb;
+    color:white;
+    font-size:22px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Generator Laporan Pengawasan Langsir</h1>
+
+<label>Jam Mulai</label>
+<div class="fake-time-input" onclick="openPicker('mulai')">
+    <span id="jamMulaiText">00:00</span>
+</div>
+
+<label>Jam Selesai</label>
+<div class="fake-time-input" onclick="openPicker('selesai')">
+    <span id="jamSelesaiText">00:00</span>
+</div>
+
+<label>Hari / Tanggal</label>
+<input type="date" id="tanggal">
+
+<label>PPKA</label>
+<input type="text" id="ppka" placeholder="Masukkan nama PPKA">
+
+<label>PRS</label>
+<input type="text" id="prs" placeholder="Masukkan nama PRS">
+
+<label>PLR</label>
+<input type="text" id="plr" placeholder="Masukkan nama PLR">
+
+<label>Masinis</label>
+<input type="text" id="masinis" placeholder="Masukkan nama Masinis">
+
+<label>Asisten Masinis</label>
+<input type="text" id="asisten" placeholder="Masukkan nama Asisten Masinis">
+
+<label>Petugas Sarana</label>
+<input type="text" id="sarana" placeholder="Masukkan nama Petugas Sarana">
+
+<label>Pengawas Langsir</label>
+<select id="pengawas">
+    <option value="">Pilih Pengawas</option>
+    <option value="Akhirudin A. KS Bji">Akhirudin A. KS Bji</option>
+    <option value="Bambang A. Spv PerKa Bji">Bambang A. Spv PerKa Bji</option>
+</select>
+
+<label>Nomor KA</label>
+<input type="text" id="ka" placeholder="Masukkan nomor KA">
+
+<label>Seri Lok</label>
+<select id="seriLok" onchange="toggleManualLok()">
+    <option value="">Pilih Seri Lok</option>
+    <option value="202">202</option>
+    <option value="206">206</option>
+    <option value="205">205</option>
+    <option value="manual">Input Manual</option>
+</select>
+
+<input type="text" id="manualLok" placeholder="Masukkan seri lok manual" style="display:none;margin-top:10px;">
+
+<label>Nomor Lok</label>
+<input type="text" id="nomorLok" placeholder="Masukkan nomor lok">
+
+<label>Pola Gerakan Langsiran</label>
+<select id="polaLangsir">
+    <option value="III-II">III-II</option>
+    <option value="III-I">III-I</option>
+</select>
+
+<label>Cuaca</label>
+<input type="text" id="cuaca" placeholder="cerah">
+
+<button onclick="sendWhatsApp()">
+Kirim WhatsApp
+</button>
+
+<div id="output" style="display:none;"></div>
+
+</div>
+
+<div class="picker-overlay" id="pickerOverlay">
+
+    <div class="picker-box">
+
+        <div class="picker-title">
+            Pilih Waktu
+        </div>
+
+        <div class="wheel-container">
+
+            <div class="wheel" id="jamWheel"></div>
+
+            <div class="wheel-separator">:</div>
+
+            <div class="wheel" id="menitWheel"></div>
+
+        </div>
+
+        <button class="picker-btn" onclick="setTime()">
+            Selesai
+        </button>
+
+    </div>
+
+</div>
+
+<script>
+
+let activeField='';
+
+function createWheel(id,max){
+
+    const wheel=document.getElementById(id);
+
+    for(let i=0;i<=max;i++){
+
+        const item=document.createElement('div');
+
+        item.textContent=String(i).padStart(2,'0');
+
+        wheel.appendChild(item);
+    }
+
+    updateWheel(wheel);
+
+    wheel.addEventListener('scroll',()=>{
+
+        clearTimeout(wheel.scrollTimer);
+
+        wheel.scrollTimer=setTimeout(()=>{
+            updateWheel(wheel);
+        },40);
+
+    });
+
+}
+
+function updateWheel(wheel){
+
+    const items=wheel.querySelectorAll('div');
+
+    const index=Math.round(wheel.scrollTop/55);
+
+    items.forEach(el=>el.classList.remove('active'));
+
+    if(items[index]){
+        items[index].classList.add('active');
+    }
+
+}
+
+createWheel('jamWheel',23);
+createWheel('menitWheel',59);
+
+function openPicker(field){
+
+    activeField=field;
+
+    document.getElementById('pickerOverlay').style.display='flex';
+}
+
+function getSelectedValue(wheelId){
+
+    const wheel=document.getElementById(wheelId);
+
+    const index=Math.round(wheel.scrollTop/55);
+
+    return String(index).padStart(2,'0');
+}
+
+function setTime(){
+
+    const jam=getSelectedValue('jamWheel');
+
+    const menit=getSelectedValue('menitWheel');
+
+    const hasil=jam+':'+menit;
+
+    if(activeField==='mulai'){
+        document.getElementById('jamMulaiText').textContent=hasil;
+    }else{
+        document.getElementById('jamSelesaiText').textContent=hasil;
+    }
+
+    document.getElementById('pickerOverlay').style.display='none';
+}
+
+function toggleManualLok(){
+
+    const seriLok=document.getElementById('seriLok').value;
+
+    const manualInput=document.getElementById('manualLok');
+
+    if(seriLok==='manual'){
+        manualInput.style.display='block';
+    }else{
+        manualInput.style.display='none';
+        manualInput.value='';
+    }
+
+}
+
+function generateReport(){
+
+    const jamMulai=document.getElementById('jamMulaiText').textContent.replace(':','.');
+    const jamSelesai=document.getElementById('jamSelesaiText').textContent.replace(':','.');
+
+    const tanggalInput=document.getElementById('tanggal').value;
+
+    const dateObj=new Date(tanggalInput);
+
+    const hariList=[
+        'Minggu','Senin','Selasa','Rabu',
+        'Kamis','Jumat','Sabtu'
+    ];
+
+    const bulanList=[
+        'Januari','Februari','Maret','April',
+        'Mei','Juni','Juli','Agustus',
+        'September','Oktober','November','Desember'
+    ];
+
+    const hari=hariList[dateObj.getDay()];
+
+    const tanggal=
+        dateObj.getDate()+' '+
+        bulanList[dateObj.getMonth()]+' '+
+        dateObj.getFullYear();
+
+    const ppka=document.getElementById('ppka').value;
+    const prs=document.getElementById('prs').value;
+    const plr=document.getElementById('plr').value;
+    const masinis=document.getElementById('masinis').value;
+    const asisten=document.getElementById('asisten').value;
+    const sarana=document.getElementById('sarana').value;
+    const pengawas=document.getElementById('pengawas').value;
+    const ka=document.getElementById('ka').value;
+
+    let seriLok=document.getElementById('seriLok').value;
+
+    if(seriLok==='manual'){
+        seriLok=document.getElementById('manualLok').value;
+    }
+
+    const nomorLok=document.getElementById('nomorLok').value;
+
+    const polaLangsir=document.getElementById('polaLangsir').value;
+
+    const cuaca=document.getElementById('cuaca').value || 'cerah';
+
+    let urutanLangsir='';
+
+    if(polaLangsir==='III-II'){
+
+        urutanLangsir=
+`- Dari Jalur III ke Jalur II Melalui wesel 5 dan 6 (Arah Merapi)
+- Dari Jalur II Ke Jalur III Melalui wesel 2, 1 dan 4 (Arah Muaralawai)`;
+
+    }else{
+
+        urutanLangsir=
+`- Dari Jalur III ke Jalur I Melalui wesel 5 dan 6 (Arah Merapi)
+- Dari Jalur I Ke Jalur III Melalui wesel 1, 2 dan 4 (Arah Muaralawai)`;
+
+    }
+
+const report=
+`*Pengawasan Langsir Stasiun Banjarsari*
+Jam : ${jamMulai} - ${jamSelesai}
+${hari}/ ${tanggal}
+
+1. Briefing Langsir
+- PPKA : ${ppka}
+- PRS : ${prs}
+- PLR : ${plr}
+- Masinis : ${masinis}
+- Assisten Masinis : ${asisten}
+- Petugas Sarana : ${sarana}
+- Pengawas Langsir : ${pengawas}
+
+2. Percobaan HT
+- Dilakukan dengan hasil: Baik
+
+3. Pelaksananan perintah langsir:
+- Sesuai PER.U/KL.104/IV/1/KA-2018 (langsir menggunakan HT)
+
+4. Tunjuk dan sebut
+- Sesuai PER.O/KL.104/I/4/KA-2018
+
+5. Pelayanan wesel:
+- Wesel terpusat melalui wesel 5 dan 6 (dilayani PRS); 2, 1 dan 4 (dilayani PPKA)
+
+6. Waskat kegiatan Pra langsiran :
+- Safety briefing langsir dilaksanakan ✓
+- Check komunikasi HT fungsi baik ✓
+- Cek APD ✓
+- Simulasi Gerakan Langsiran ✓
+
+7. Proses Gerakan Langsiran :
+*Langsiran Lok Dinas ex KA ${ka} (Lok CC ${seriLok} ${nomorLok})* KA ${ka} masuk dijalur III (Loading) lengkap semb. 21, preival dan berhenti betul.
+Lok dinas (arah mrp) dilepas dari rangkaian untuk dilangsir dan digandengkan kembali ke jalur III arah mli
+
+Urutan Gerakan Langsiran :
+${urutanLangsir}
+
+* Lok Gandeng Kembali posisi arah Mli, Langsiran selesai preival Wesel 4
+
+8. Evaluasi pasca langsiran / Kendala / butuh dukungan suport : TIADA, Cuaca ${cuaca}
+
+*Situasi matmancarli*
+Demikian terima kasih.`;
+
+document.getElementById('output').textContent=report;
+
+}
+
+function sendWhatsApp(){
+
+    const wajib=[
+        {
+            id:'tanggal',
+            nama:'Hari / Tanggal'
+        },
+        {
+            id:'ppka',
+            nama:'PPKA'
+        },
+        {
+            id:'prs',
+            nama:'PRS'
+        },
+        {
+            id:'plr',
+            nama:'PLR'
+        },
+        {
+            id:'masinis',
+            nama:'Masinis'
+        },
+        {
+            id:'asisten',
+            nama:'Asisten Masinis'
+        },
+        {
+            id:'sarana',
+            nama:'Petugas Sarana'
+        },
+        {
+            id:'pengawas',
+            nama:'Pengawas Langsir'
+        },
+        {
+            id:'ka',
+            nama:'Nomor KA'
+        },
+        {
+            id:'seriLok',
+            nama:'Seri Lok'
+        },
+        {
+            id:'nomorLok',
+            nama:'Nomor Lok'
+        }
+    ];
+
+    for(let item of wajib){
+
+        const el=document.getElementById(item.id);
+
+        if(!el.value){
+
+            alert(item.nama + ' belum diisi');
+
+            el.focus();
+
+            return;
+        }
+
+    }
+
+    const seriLok=document.getElementById('seriLok').value;
+
+    if(seriLok==='manual'){
+
+        const manualLok=document.getElementById('manualLok');
+
+        if(!manualLok.value){
+
+            alert('Seri Lok manual belum diisi');
+
+            manualLok.focus();
+
+            return;
+        }
+
+    }
+
+    generateReport();
+
+    const text=document.getElementById('output').textContent;
+
+    window.open(
+        `https://wa.me/?text=${encodeURIComponent(text)}`,
+        '_blank'
+    );
+
+}
+
+</script>
+
+</body>
+</html>
