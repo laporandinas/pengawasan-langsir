@@ -3,83 +3,179 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Generator Laporan Pengawasan Langsir</title>
 
 <style>
-body {
-    font-family: Arial, sans-serif;
-    background: #f2f2f2;
-    margin: 0;
-    padding: 15px;
+
+body{
+    font-family:Arial,sans-serif;
+    background:#f2f2f2;
+    margin:0;
+    padding:15px;
 }
 
-.container {
-    max-width: 900px;
-    margin: auto;
-    background: white;
-    padding: 20px;
-    border-radius: 14px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+.container{
+    max-width:900px;
+    margin:auto;
+    background:white;
+    padding:20px;
+    border-radius:22px;
 }
 
-h1 {
-    text-align: center;
-    font-size: 24px;
-    margin-bottom: 20px;
+h1{
+    text-align:center;
+    margin-bottom:30px;
+    font-size:28px;
 }
 
-label {
-    display: block;
-    margin-top: 14px;
-    margin-bottom: 5px;
-    font-weight: bold;
+label{
+    display:block;
+    margin-top:18px;
+    margin-bottom:8px;
+    font-weight:bold;
+    font-size:18px;
 }
 
-input, textarea, select {
-    width: 100%;
-    padding: 12px;
-    border-radius: 10px;
-    border: 1px solid #ccc;
-    box-sizing: border-box;
-    font-size: 15px;
+input,select{
+    width:100%;
+    padding:16px;
+    border-radius:14px;
+    border:1px solid #ccc;
+    box-sizing:border-box;
+    font-size:16px;
 }
 
-.button-group {
-    display: flex;
-    gap: 10px;
-    margin-top: 20px;
+button{
+    width:100%;
+    padding:18px;
+    border:none;
+    border-radius:16px;
+    background:#25D366;
+    color:white;
+    font-size:18px;
+    margin-top:25px;
 }
 
-button {
-    flex: 1;
-    padding: 14px;
-    border: none;
-    border-radius: 10px;
-    font-size: 16px;
-    cursor: pointer;
-    background: #25D366;
-    color: white;
+.fake-time-input{
+    width:100%;
+    background:white;
+    border:1px solid #ccc;
+    border-radius:14px;
+    padding:20px;
+    font-size:34px;
+    text-align:center;
+    box-sizing:border-box;
 }
 
-#output {
-    display: none;
+.picker-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.45);
+    display:none;
+    justify-content:center;
+    align-items:flex-end;
+    z-index:9999;
 }
 
-.time-picker {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+.picker-box{
+    width:100%;
+    background:white;
+    border-radius:32px 32px 0 0;
+    padding:25px;
+    box-sizing:border-box;
 }
 
-.time-picker select {
-    width: 100%;
-    padding: 12px;
-    border-radius: 10px;
-    border: 1px solid #ccc;
-    font-size: 18px;
-    text-align: center;
-    background: white;
+.picker-title{
+    text-align:center;
+    font-size:30px;
+    font-weight:bold;
+    margin-bottom:25px;
 }
+
+.wheel-container{
+    position:relative;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:25px;
+}
+
+.wheel-container::after{
+    content:'';
+
+    position:absolute;
+
+    width:100%;
+    height:55px;
+
+    border-top:2px solid #ddd;
+    border-bottom:2px solid #ddd;
+
+    top:50%;
+    transform:translateY(-50%);
+
+    pointer-events:none;
+}
+
+.wheel{
+    width:120px;
+    height:220px;
+
+    overflow-y:auto;
+
+    scroll-snap-type:y mandatory;
+
+    padding-top:82px;
+    padding-bottom:82px;
+
+    box-sizing:border-box;
+
+    text-align:center;
+
+    scrollbar-width:none;
+}
+
+.wheel::-webkit-scrollbar{
+    display:none;
+}
+
+.wheel div{
+    height:55px;
+    line-height:55px;
+
+    scroll-snap-align:center;
+
+    font-size:42px;
+    font-weight:bold;
+
+    opacity:0.22;
+
+    transition:0.15s;
+}
+
+.wheel div.active{
+    opacity:1;
+    font-size:58px;
+}
+
+.wheel-separator{
+    font-size:48px;
+    font-weight:bold;
+}
+
+.picker-btn{
+    width:100%;
+    margin-top:25px;
+    padding:18px;
+    border:none;
+    border-radius:20px;
+    background:#2563eb;
+    color:white;
+    font-size:22px;
+}
+
 </style>
 </head>
 
@@ -90,17 +186,13 @@ button {
 <h1>Generator Laporan Pengawasan Langsir</h1>
 
 <label>Jam Mulai</label>
-<div class="time-picker">
-    <select id="jamMulaiJam"></select>
-    <span>:</span>
-    <select id="jamMulaiMenit"></select>
+<div class="fake-time-input" onclick="openPicker('mulai')">
+    <span id="jamMulaiText">00:00</span>
 </div>
 
 <label>Jam Selesai</label>
-<div class="time-picker">
-    <select id="jamSelesaiJam"></select>
-    <span>:</span>
-    <select id="jamSelesaiMenit"></select>
+<div class="fake-time-input" onclick="openPicker('selesai')">
+    <span id="jamSelesaiText">00:00</span>
 </div>
 
 <label>Hari / Tanggal</label>
@@ -143,7 +235,7 @@ button {
     <option value="manual">Input Manual</option>
 </select>
 
-<input type="text" id="manualLok" placeholder="Masukkan seri lok manual" style="display:none; margin-top:10px;">
+<input type="text" id="manualLok" placeholder="Masukkan seri lok manual" style="display:none;margin-top:10px;">
 
 <label>Nomor Lok</label>
 <input type="text" id="nomorLok" placeholder="Masukkan nomor lok">
@@ -157,142 +249,201 @@ button {
 <label>Cuaca</label>
 <input type="text" id="cuaca" placeholder="cerah">
 
-<div class="button-group">
-    <button onclick="sendWhatsApp()">Kirim WhatsApp</button>
+<button onclick="sendWhatsApp()">
+Kirim WhatsApp
+</button>
+
+<div id="output" style="display:none;"></div>
+
 </div>
 
-<div id="output"></div>
+<div class="picker-overlay" id="pickerOverlay">
+
+    <div class="picker-box">
+
+        <div class="picker-title">
+            Pilih Waktu
+        </div>
+
+        <div class="wheel-container">
+
+            <div class="wheel" id="jamWheel"></div>
+
+            <div class="wheel-separator">:</div>
+
+            <div class="wheel" id="menitWheel"></div>
+
+        </div>
+
+        <button class="picker-btn" onclick="setTime()">
+            Selesai
+        </button>
+
+    </div>
 
 </div>
 
 <script>
 
-function isiJam() {
-    const selects = [
-        'jamMulaiJam',
-        'jamMulaiMenit',
-        'jamSelesaiJam',
-        'jamSelesaiMenit'
-    ];
+let activeField='';
 
-    selects.forEach(id => {
-        const select = document.getElementById(id);
+function createWheel(id,max){
 
-        let max = id.includes('Menit') ? 59 : 23;
+    const wheel=document.getElementById(id);
 
-        for (let i = 0; i <= max; i++) {
-            const option = document.createElement('option');
+    for(let i=0;i<=max;i++){
 
-            option.value = String(i).padStart(2, '0');
-            option.textContent = String(i).padStart(2, '0');
+        const item=document.createElement('div');
 
-            select.appendChild(option);
-        }
+        item.textContent=String(i).padStart(2,'0');
+
+        wheel.appendChild(item);
+    }
+
+    updateWheel(wheel);
+
+    wheel.addEventListener('scroll',()=>{
+
+        clearTimeout(wheel.scrollTimer);
+
+        wheel.scrollTimer=setTimeout(()=>{
+            updateWheel(wheel);
+        },40);
+
     });
+
 }
 
-isiJam();
+function updateWheel(wheel){
 
-function toggleManualLok() {
-    const seriLok = document.getElementById('seriLok').value;
-    const manualInput = document.getElementById('manualLok');
+    const items=wheel.querySelectorAll('div');
 
-    if (seriLok === 'manual') {
-        manualInput.style.display = 'block';
-    } else {
-        manualInput.style.display = 'none';
-        manualInput.value = '';
+    const index=Math.round(wheel.scrollTop/55);
+
+    items.forEach(el=>el.classList.remove('active'));
+
+    if(items[index]){
+        items[index].classList.add('active');
     }
+
 }
 
-function generateReport() {
+createWheel('jamWheel',23);
+createWheel('menitWheel',59);
 
-    const requiredFields = [
-        { id: 'tanggal', name: 'Hari / Tanggal' },
-        { id: 'ppka', name: 'PPKA' },
-        { id: 'prs', name: 'PRS' },
-        { id: 'plr', name: 'PLR' },
-        { id: 'masinis', name: 'Masinis' },
-        { id: 'asisten', name: 'Asisten Masinis' },
-        { id: 'sarana', name: 'Petugas Sarana' },
-        { id: 'pengawas', name: 'Pengawas Langsir' },
-        { id: 'ka', name: 'Nomor KA' },
-        { id: 'seriLok', name: 'Seri Lok' },
-        { id: 'nomorLok', name: 'Nomor Lok' }
-    ];
+function openPicker(field){
 
-    for (let field of requiredFields) {
-        const element = document.getElementById(field.id);
+    activeField=field;
 
-        if (!element.value.trim()) {
-            alert(field.name + ' belum diisi');
-            element.focus();
-            return false;
-        }
+    document.getElementById('pickerOverlay').style.display='flex';
+}
+
+function getSelectedValue(wheelId){
+
+    const wheel=document.getElementById(wheelId);
+
+    const index=Math.round(wheel.scrollTop/55);
+
+    return String(index).padStart(2,'0');
+}
+
+function setTime(){
+
+    const jam=getSelectedValue('jamWheel');
+
+    const menit=getSelectedValue('menitWheel');
+
+    const hasil=jam+':'+menit;
+
+    if(activeField==='mulai'){
+        document.getElementById('jamMulaiText').textContent=hasil;
+    }else{
+        document.getElementById('jamSelesaiText').textContent=hasil;
     }
 
-    const jamMulai =
-        document.getElementById('jamMulaiJam').value +
-        '.' +
-        document.getElementById('jamMulaiMenit').value;
+    document.getElementById('pickerOverlay').style.display='none';
+}
 
-    const jamSelesai =
-        document.getElementById('jamSelesaiJam').value +
-        '.' +
-        document.getElementById('jamSelesaiMenit').value;
+function toggleManualLok(){
 
-    const tanggalInput = document.getElementById('tanggal').value;
+    const seriLok=document.getElementById('seriLok').value;
 
-    const dateObj = new Date(tanggalInput);
+    const manualInput=document.getElementById('manualLok');
 
-    const hariList = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+    if(seriLok==='manual'){
+        manualInput.style.display='block';
+    }else{
+        manualInput.style.display='none';
+        manualInput.value='';
+    }
 
-    const bulanList = [
-        'Januari','Februari','Maret','April','Mei','Juni',
-        'Juli','Agustus','September','Oktober','November','Desember'
+}
+
+function generateReport(){
+
+    const jamMulai=document.getElementById('jamMulaiText').textContent.replace(':','.');
+    const jamSelesai=document.getElementById('jamSelesaiText').textContent.replace(':','.');
+
+    const tanggalInput=document.getElementById('tanggal').value;
+
+    const dateObj=new Date(tanggalInput);
+
+    const hariList=[
+        'Minggu','Senin','Selasa','Rabu',
+        'Kamis','Jumat','Sabtu'
     ];
 
-    const hari = hariList[dateObj.getDay()];
+    const bulanList=[
+        'Januari','Februari','Maret','April',
+        'Mei','Juni','Juli','Agustus',
+        'September','Oktober','November','Desember'
+    ];
 
-    const tanggal =
-        dateObj.getDate() + ' ' +
-        bulanList[dateObj.getMonth()] + ' ' +
+    const hari=hariList[dateObj.getDay()];
+
+    const tanggal=
+        dateObj.getDate()+' '+
+        bulanList[dateObj.getMonth()]+' '+
         dateObj.getFullYear();
 
-    const ppka = document.getElementById('ppka').value;
-    const prs = document.getElementById('prs').value;
-    const plr = document.getElementById('plr').value;
-    const masinis = document.getElementById('masinis').value;
-    const asisten = document.getElementById('asisten').value;
-    const sarana = document.getElementById('sarana').value;
-    const pengawas = document.getElementById('pengawas').value;
-    const ka = document.getElementById('ka').value;
+    const ppka=document.getElementById('ppka').value;
+    const prs=document.getElementById('prs').value;
+    const plr=document.getElementById('plr').value;
+    const masinis=document.getElementById('masinis').value;
+    const asisten=document.getElementById('asisten').value;
+    const sarana=document.getElementById('sarana').value;
+    const pengawas=document.getElementById('pengawas').value;
+    const ka=document.getElementById('ka').value;
 
-    let seriLok = document.getElementById('seriLok').value;
+    let seriLok=document.getElementById('seriLok').value;
 
-    if (seriLok === 'manual') {
-        seriLok = document.getElementById('manualLok').value;
+    if(seriLok==='manual'){
+        seriLok=document.getElementById('manualLok').value;
     }
 
-    const nomorLok = document.getElementById('nomorLok').value;
+    const nomorLok=document.getElementById('nomorLok').value;
 
-    const polaLangsir = document.getElementById('polaLangsir').value;
+    const polaLangsir=document.getElementById('polaLangsir').value;
 
-    const cuaca = document.getElementById('cuaca').value || 'cerah';
+    const cuaca=document.getElementById('cuaca').value || 'cerah';
 
-    let urutanLangsir = '';
+    let urutanLangsir='';
 
-    if (polaLangsir === 'III-II') {
-        urutanLangsir =
+    if(polaLangsir==='III-II'){
+
+        urutanLangsir=
 `- Dari Jalur III ke Jalur II Melalui wesel 5 dan 6 (Arah Merapi)
 - Dari Jalur II Ke Jalur III Melalui wesel 2, 1 dan 4 (Arah Muaralawai)`;
-    } else {
-        urutanLangsir =
+
+    }else{
+
+        urutanLangsir=
 `- Dari Jalur III ke Jalur I Melalui wesel 5 dan 6 (Arah Merapi)
 - Dari Jalur I Ke Jalur III Melalui wesel 1, 2 dan 4 (Arah Muaralawai)`;
+
     }
 
-    const report =
+const report=
 `*Pengawasan Langsir Stasiun Banjarsari*
 Jam : ${jamMulai} - ${jamSelesai}
 ${hari}/ ${tanggal}
@@ -338,22 +489,100 @@ ${urutanLangsir}
 *Situasi matmancarli*
 Demikian terima kasih.`;
 
-    document.getElementById('output').textContent = report;
+document.getElementById('output').textContent=report;
 
-    return true;
 }
 
-function sendWhatsApp() {
+function sendWhatsApp(){
 
-    const berhasil = generateReport();
+    const wajib=[
+        {
+            id:'tanggal',
+            nama:'Hari / Tanggal'
+        },
+        {
+            id:'ppka',
+            nama:'PPKA'
+        },
+        {
+            id:'prs',
+            nama:'PRS'
+        },
+        {
+            id:'plr',
+            nama:'PLR'
+        },
+        {
+            id:'masinis',
+            nama:'Masinis'
+        },
+        {
+            id:'asisten',
+            nama:'Asisten Masinis'
+        },
+        {
+            id:'sarana',
+            nama:'Petugas Sarana'
+        },
+        {
+            id:'pengawas',
+            nama:'Pengawas Langsir'
+        },
+        {
+            id:'ka',
+            nama:'Nomor KA'
+        },
+        {
+            id:'seriLok',
+            nama:'Seri Lok'
+        },
+        {
+            id:'nomorLok',
+            nama:'Nomor Lok'
+        }
+    ];
 
-    if (!berhasil) return;
+    for(let item of wajib){
 
-    const text = document.getElementById('output').textContent;
+        const el=document.getElementById(item.id);
 
-    const encoded = encodeURIComponent(text);
+        if(!el.value){
 
-    window.open(`https://wa.me/?text=${encoded}`, '_blank');
+            alert(item.nama + ' belum diisi');
+
+            el.focus();
+
+            return;
+        }
+
+    }
+
+    const seriLok=document.getElementById('seriLok').value;
+
+    if(seriLok==='manual'){
+
+        const manualLok=document.getElementById('manualLok');
+
+        if(!manualLok.value){
+
+            alert('Seri Lok manual belum diisi');
+
+            manualLok.focus();
+
+            return;
+        }
+
+    }
+
+    generateReport();
+
+    const text=document.getElementById('output').textContent;
+
+    window.open(
+        `https://wa.me/?text=${encodeURIComponent(text)}`,
+        '_blank'
+    );
+
 }
 
 </script>
